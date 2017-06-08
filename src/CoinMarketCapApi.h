@@ -61,7 +61,6 @@ class CoinMarketCapApi
 
   private:
     Client *client;
-    bool checkForOkResponse(String response);
 };
 
 #endif

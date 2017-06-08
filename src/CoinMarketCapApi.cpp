@@ -50,9 +50,9 @@ String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
 				avail=true;
 			}
 			if (avail) {
-				Serial.println("Body:");
+				// Serial.println("Body:");
 				Serial.println(body);
-				Serial.println("END");
+				// Serial.println("END");
 				break;
 			}
 		}
@@ -65,41 +65,44 @@ CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency
   // https://api.coinmarketcap.com/v1/ticker/bitcoin/
   String command="/v1/ticker/" + coinId + "/";
   if (currency != "") {
-    command = command + "?currency=" + currency;
+    command = command + "?convert=" + currency;
   }
 
+  // Serial.println(command);
   String response = SendGetToCoinMarketCap(command);
   CMCTickerResponse responseObject = CMCTickerResponse();
   DynamicJsonBuffer jsonBuffer;
-	JsonObject& root = jsonBuffer.parseObject(response);
+	JsonArray& root = jsonBuffer.parseArray(response);
   if (root.success()) {
-		if (root.containsKey("error")) {
-			 responseObject.error = root["error"].as<String>();
-		} else {
-        responseObject.id = root["id"].as<String>();
-        responseObject.name = root["name"].as<String>();
-        responseObject.symbol = root["symbol"].as<String>();
-        responseObject.rank = root["rank"].as<int>();
-        responseObject.price_usd = root["price_usd"].as<float>();
-//       id: "bitcoin",
-// name: "Bitcoin",
-// symbol: "BTC",
-// rank: "1",
-// price_usd: "2598.37",
-// price_btc: "1.0",
-// 24h_volume_usd: "1201740000.0",
-// market_cap_usd: "42545027009.0",
-// available_supply: "16373737.0",
-// total_supply: "16373737.0",
-// percent_change_1h: "-0.19",
-// percent_change_24h: "3.3",
-// percent_change_7d: "16.69",
-// last_updated: "1496681052"
-    }
+    responseObject.id = root[0]["id"].as<String>();
+    responseObject.name = root[0]["name"].as<String>();
+    responseObject.symbol = root[0]["symbol"].as<String>();
+    responseObject.rank = root[0]["rank"].as<int>();
+    responseObject.price_usd = root[0]["price_usd"].as<float>();
+
+    responseObject.price_btc = root[0]["price_btc"].as<float>();
+    responseObject.volume_usd_24h = root[0]["24h_volume_usd"].as<float>();
+    responseObject.market_cap_usd = root[0]["market_cap_usd"].as<float>();
+    responseObject.available_supply = root[0]["available_supply"].as<float>();
+    responseObject.total_supply = root[0]["total_supply"].as<float>();
+
+    responseObject.percent_change_1h = root[0]["percent_change_1h"].as<float>();
+    responseObject.percent_change_24h = root[0]["percent_change_24h"].as<float>();
+    responseObject.percent_change_7d = root[0]["percent_change_7d"].as<float>();
+    responseObject.last_updated = root[0]["last_updated"].as<float>();
+
+    currency.toLowerCase();
+    responseObject.price_currency = root[0]["price_" + currency].as<float>();
+    responseObject.volume_currency_24h = root[0]["volume_" + currency + "_24h"].as<float>();
+    responseObject.market_cap_currency = root[0]["market_cap_" + currency].as<float>();
   } else {
-    responseObject.error = "Failed to parse JSON";
+    JsonObject& rootObject = jsonBuffer.parseObject(response);
+    if (rootObject.containsKey("error")) {
+       responseObject.error = rootObject["error"].as<String>();
+    } else {
+      responseObject.error = "Failed to parse JSON";
+    }
+
+    return responseObject;
   }
-
-  return responseObject;
-
 }
