@@ -10,9 +10,14 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 
+//------- Install From Library Manager -------
+#include <ArduinoJson.h>
+
+
 //------- Replace the following! ------
 char ssid[] = "SSID";       // your network SSID (name)
 char password[] = "PASSWORD";  // your network key
+
 
 WiFiClientSecure client;
 CoinMarketCapApi api(client);
