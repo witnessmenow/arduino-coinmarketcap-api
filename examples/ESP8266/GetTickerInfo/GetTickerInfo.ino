@@ -104,9 +104,9 @@ void printTickerData(String ticker) {
     Serial.print("Price in requested currecy: ");
     Serial.println(response.price_currency);
     Serial.print("24h Volume in requested currency: ");
-    Serial.println(response.percent_change_7d);
+    Serial.println(response.volume_currency_24h);
     Serial.print("Market Cap in requested currency: ");
-    Serial.println(response.last_updated);
+    Serial.println(response.market_cap_currency);
 
 
   } else {
