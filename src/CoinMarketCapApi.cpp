@@ -78,23 +78,23 @@ CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency
     responseObject.name = root[0]["name"].as<String>();
     responseObject.symbol = root[0]["symbol"].as<String>();
     responseObject.rank = root[0]["rank"].as<int>();
-    responseObject.price_usd = root[0]["price_usd"].as<float>();
+    responseObject.price_usd = root[0]["price_usd"].as<double>();
 
-    responseObject.price_btc = root[0]["price_btc"].as<float>();
-    responseObject.volume_usd_24h = root[0]["24h_volume_usd"].as<float>();
-    responseObject.market_cap_usd = root[0]["market_cap_usd"].as<float>();
-    responseObject.available_supply = root[0]["available_supply"].as<float>();
-    responseObject.total_supply = root[0]["total_supply"].as<float>();
+    responseObject.price_btc = root[0]["price_btc"].as<double>();
+    responseObject.volume_usd_24h = root[0]["24h_volume_usd"].as<double>();
+    responseObject.market_cap_usd = root[0]["market_cap_usd"].as<double>();
+    responseObject.available_supply = root[0]["available_supply"].as<double>();
+    responseObject.total_supply = root[0]["total_supply"].as<double>();
 
-    responseObject.percent_change_1h = root[0]["percent_change_1h"].as<float>();
-    responseObject.percent_change_24h = root[0]["percent_change_24h"].as<float>();
-    responseObject.percent_change_7d = root[0]["percent_change_7d"].as<float>();
-    responseObject.last_updated = root[0]["last_updated"].as<float>();
+    responseObject.percent_change_1h = root[0]["percent_change_1h"].as<double>();
+    responseObject.percent_change_24h = root[0]["percent_change_24h"].as<double>();
+    responseObject.percent_change_7d = root[0]["percent_change_7d"].as<double>();
+    responseObject.last_updated = root[0]["last_updated"].as<double>();
 
     currency.toLowerCase();
-    responseObject.price_currency = root[0]["price_" + currency].as<float>();
-    responseObject.volume_currency_24h = root[0]["volume_" + currency + "_24h"].as<float>();
-    responseObject.market_cap_currency = root[0]["market_cap_" + currency].as<float>();
+    responseObject.price_currency = root[0]["price_" + currency].as<double>();
+    responseObject.volume_currency_24h = root[0]["volume_" + currency + "_24h"].as<double>();
+    responseObject.market_cap_currency = root[0]["market_cap_" + currency].as<double>();
   } else {
     JsonObject& rootObject = jsonBuffer.parseObject(response);
     if (rootObject.containsKey("error")) {

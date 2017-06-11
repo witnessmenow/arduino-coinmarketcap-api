@@ -32,21 +32,21 @@ struct CMCTickerResponse{
   String name;
   String symbol;
   int rank;
-  float price_usd;
-  float price_btc;
-  float volume_usd_24h;
-  float market_cap_usd;
-  float available_supply;
-  float total_supply;
+  double price_usd;
+  double price_btc;
+  double volume_usd_24h;
+  double market_cap_usd;
+  double available_supply;
+  double total_supply;
 
-  float percent_change_1h;
-  float percent_change_24h;
-  float percent_change_7d;
-  float last_updated;
+  double percent_change_1h;
+  double percent_change_24h;
+  double percent_change_7d;
+  double last_updated;
 
-  float price_currency;
-  float volume_currency_24h;
-  float market_cap_currency;
+  double price_currency;
+  double volume_currency_24h;
+  double market_cap_currency;
 
   String error;
 };
