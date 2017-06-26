@@ -5,22 +5,22 @@ CoinMarketCapApi::CoinMarketCapApi(Client &client)	{
 }
 
 String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
-  String headers="";
   String body="";
+  body.reserve(700);
   bool finishedHeaders = false;
   bool currentLineIsBlank = true;
 	long now;
 	bool avail;
-	// Connect with google-maps api over ssl
-	if (client->connect(COINMARKETCAP_HOST, COINMARKETCAP_SSL_PORT)) {
+
+	if (client->connect(COINMARKETCAP_HOST, Port)) {
 		// Serial.println(".... connected to server");
 		String a="";
 		char c;
 		int ch_count=0;
 		client->println("GET " + command + " HTTP/1.1");
     client->println("Host: " COINMARKETCAP_HOST);
-		client->println("User-Agent: arduino/1.0.0");
-		client->println("");
+		client->println(F("User-Agent: arduino/1.0.0"));
+		client->println();
 		now=millis();
 		avail=false;
 		while (millis()-now<1500) {
@@ -31,10 +31,6 @@ String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
         if(!finishedHeaders){
           if (currentLineIsBlank && c == '\n') {
             finishedHeaders = true;
-          }
-          else{
-            headers = headers + c;
-
           }
         } else {
           body=body+c;
@@ -51,7 +47,7 @@ String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
 			}
 			if (avail) {
 				// Serial.println("Body:");
-				Serial.println(body);
+				// Serial.println(body);
 				// Serial.println("END");
 				break;
 			}

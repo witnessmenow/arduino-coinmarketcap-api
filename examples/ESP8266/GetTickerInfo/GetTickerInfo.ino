@@ -8,7 +8,7 @@
 
 
 #include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
+#include <WiFiClient.h>
 
 //------- Install From Library Manager -------
 #include <ArduinoJson.h>
@@ -19,7 +19,7 @@ char ssid[] = "SSID";       // your network SSID (name)
 char password[] = "PASSWORD";  // your network key
 
 
-WiFiClientSecure client;
+WiFiClient client;
 CoinMarketCapApi api(client);
 
 // CoinMarketCap's limit is "no more than 10 per minute"
