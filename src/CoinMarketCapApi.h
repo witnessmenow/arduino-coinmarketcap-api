@@ -57,7 +57,7 @@ class CoinMarketCapApi
     CoinMarketCapApi (Client &client);
     String SendGetToCoinMarketCap(String command);
     CMCTickerResponse GetTickerInfo(String coinId, String currency = "");
-    int Port = 80;
+    int Port = 443;
 
   private:
     Client *client;
