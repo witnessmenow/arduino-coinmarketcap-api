@@ -15,7 +15,7 @@ Code is as follows:
 CMCTickerResponse response = api.GetTickerInfo(ticker, "eur");
 ```
 
-Ticker unfortunately is not the symbol for some reason. Go to [CoinMarketCap.com](http://coinmarketcap.com/) and select the coin you would like to check, the ticker name makes up the last part of the URL. e.g: http://coinmarketcap.com/currencies/bitcoin/ , "bitcoin" is the ticker value
+Ticker unfortunately is not the symbol for some reason. Go to [CoinMarketCap.com](http://coinmarketcap.com/) and select the coin you would like to check, the ticker name makes up the last part of the URL. e.g: https://coinmarketcap.com/currencies/bitcoin/ , "bitcoin" is the ticker value
 
 Currency is optional, so you can pass only ticker if you want.
 Check out the currency drop down on [CoinMarketCap.com](http://coinmarketcap.com/) to get available values
