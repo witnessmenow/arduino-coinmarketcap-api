@@ -4,9 +4,102 @@ CoinMarketCapApi::CoinMarketCapApi(Client &client)	{
   this->client = &client;
 }
 
-String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
-  String body="";
-  body.reserve(700);
+CMCTickerResponse responseObject;
+String requestedCurrency;
+
+//**************************************************************************//
+// This code is the JSON Parser code written by squix78 as part of his example,
+// modified for this application //
+// https://github.com/squix78/json-streaming-parser //
+
+class DirectionsListener : public JsonListener {
+ public:
+  virtual void whitespace(char c);
+
+  virtual void startDocument();
+
+  virtual void key(String key);
+
+  virtual void value(String value);
+
+  virtual void endArray();
+
+  virtual void endObject();
+
+  virtual void endDocument();
+
+  virtual void startArray();
+
+  virtual void startObject();
+};
+
+void DirectionsListener::whitespace(char c) {
+  // Serial.println("whitespace");
+}
+
+void DirectionsListener::startDocument() {
+  // Serial.println("start document");
+}
+
+void DirectionsListener::key(String key) { currentKey = key; }
+
+void DirectionsListener::value(String value) {
+  if (currentKey == F("id")) {
+    responseObject.id = value;
+  } else if (currentKey == F("name")) {
+    responseObject.name = value;
+  } else if (currentKey == F("symbol")) {
+    responseObject.symbol = value;
+  } else if (currentKey == F("rank")) {
+    responseObject.rank = value.toInt();
+  } else if (currentKey == F("price_usd")) {
+    responseObject.price_usd = value.toDouble();
+  } else if (currentKey == F("price_btc")) {
+    responseObject.price_btc = value.toDouble();
+  } else if (currentKey == F("24h_volume_usd")) {
+    responseObject.volume_usd_24h = value.toDouble();
+  } else if (currentKey == F("market_cap_usd")) {
+    responseObject.market_cap_usd = value.toDouble();
+  } else if (currentKey == F("available_supply")) {
+    responseObject.available_supply = value.toDouble();
+  } else if (currentKey == F("total_supply")) {
+    responseObject.total_supply = value.toDouble();
+  } else if (currentKey == F("percent_change_1h")) {
+    responseObject.percent_change_1h = value.toDouble();
+  } else if (currentKey == F("percent_change_24h")) {
+    responseObject.percent_change_24h = value.toDouble();
+  } else if (currentKey == F("percent_change_7d")) {
+    responseObject.percent_change_7d = value.toDouble();
+  } else if (currentKey == F("last_updated")) {
+    responseObject.last_updated = value.toDouble();
+  } else if (requestedCurrency != "") {
+    if (currentKey == "price_" + requestedCurrency) {
+      responseObject.price_currency = value.toDouble();
+    } else if (currentKey == "24h_volume_" + requestedCurrency) {
+      responseObject.volume_currency_24h = value.toDouble();
+    } else if (currentKey == "market_cap_" + requestedCurrency) {
+      responseObject.market_cap_currency = value.toDouble();
+    }
+  }
+}
+
+void DirectionsListener::endArray() {
+}
+
+void DirectionsListener::endObject() {
+}
+
+void DirectionsListener::endDocument() {
+  // Serial.println("end document. ");
+}
+
+void DirectionsListener::startArray() {
+}
+
+void DirectionsListener::startObject() {
+}
+
+bool CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
   bool finishedHeaders = false;
   bool currentLineIsBlank = true;
 	long now;
@@ -14,7 +107,6 @@ String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
 
 	if (client->connect(COINMARKETCAP_HOST, Port)) {
 		// Serial.println(".... connected to server");
-		String a="";
 		char c;
 		int ch_count=0;
 		client->println("GET " + command + " HTTP/1.1");
@@ -23,38 +115,18 @@ String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
 		client->println();
 		now=millis();
 		avail=false;
-		while (millis()-now<1500) {
-			while (client->available()) {
-				char c = client->read();
-				//Serial.write(c);
+    client->setTimeout(1200);
+    char endOfHeaders[] = "\r\n\r\n";
+    bool ok = client->find(endOfHeaders);
 
-        if(!finishedHeaders){
-          if (currentLineIsBlank && c == '\n') {
-            finishedHeaders = true;
-          }
-        } else {
-          body=body+c;
-          ch_count++;
-        }
+    if (!ok) {
+      Serial.println("No response or invalid response!");
+    }
 
-        if (c == '\n') {
-          currentLineIsBlank = true;
-        }else if (c != '\r') {
-          currentLineIsBlank = false;
-        }
-
-				avail=true;
-			}
-			if (avail) {
-				// Serial.println("Body:");
-				// Serial.println(body);
-				// Serial.println("END");
-				break;
-			}
-		}
+		return ok;
 	}
 
-  return body;
+  return false;
 }
 
 CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency) {
@@ -64,41 +136,24 @@ CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency
     command = command + "?convert=" + currency;
   }
 
+  // Clear old values
+  requestedCurrency = currency;
+  responseObject = CMCTickerResponse();
   // Serial.println(command);
-  String response = SendGetToCoinMarketCap(command);
-  CMCTickerResponse responseObject = CMCTickerResponse();
-  DynamicJsonBuffer jsonBuffer;
-	JsonArray& root = jsonBuffer.parseArray(response);
-  if (root.success()) {
-    responseObject.id = root[0]["id"].as<String>();
-    responseObject.name = root[0]["name"].as<String>();
-    responseObject.symbol = root[0]["symbol"].as<String>();
-    responseObject.rank = root[0]["rank"].as<int>();
-    responseObject.price_usd = root[0]["price_usd"].as<double>();
 
-    responseObject.price_btc = root[0]["price_btc"].as<double>();
-    responseObject.volume_usd_24h = root[0]["24h_volume_usd"].as<double>();
-    responseObject.market_cap_usd = root[0]["market_cap_usd"].as<double>();
-    responseObject.available_supply = root[0]["available_supply"].as<double>();
-    responseObject.total_supply = root[0]["total_supply"].as<double>();
+  if(SendGetToCoinMarketCap(command)) {
 
-    responseObject.percent_change_1h = root[0]["percent_change_1h"].as<double>();
-    responseObject.percent_change_24h = root[0]["percent_change_24h"].as<double>();
-    responseObject.percent_change_7d = root[0]["percent_change_7d"].as<double>();
-    responseObject.last_updated = root[0]["last_updated"].as<double>();
+    while (client->available()) {
+      char c = client->read();
+      // parsing code:
+      // most of the work happens in the header code
+      // at the top of this file
+      parser.parse(c);
 
-    currency.toLowerCase();
-    responseObject.price_currency = root[0]["price_" + currency].as<double>();
-    responseObject.volume_currency_24h = root[0]["volume_" + currency + "_24h"].as<double>();
-    responseObject.market_cap_currency = root[0]["market_cap_" + currency].as<double>();
-  } else {
-    JsonObject& rootObject = jsonBuffer.parseObject(response);
-    if (rootObject.containsKey("error")) {
-       responseObject.error = rootObject["error"].as<String>();
-    } else {
-      responseObject.error = "Failed to parse JSON";
     }
-
-    return responseObject;
+  } else {
+    lastResponse.error = "Error with request";
   }
+
+  return responseObject;
 }

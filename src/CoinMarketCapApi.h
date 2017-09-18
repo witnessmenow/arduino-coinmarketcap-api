@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #define CoinMarketCapApi_h
 
 #include <Arduino.h>
-#include <ArduinoJson.h>
+#include "JsonListener.h"
+#include "JsonStreamingParser.h"
 #include <Client.h>
 
 #define COINMARKETCAP_HOST "api.coinmarketcap.com"
@@ -55,7 +56,7 @@ class CoinMarketCapApi
 {
   public:
     CoinMarketCapApi (Client &client);
-    String SendGetToCoinMarketCap(String command);
+    bool SendGetToCoinMarketCap(String command);
     CMCTickerResponse GetTickerInfo(String coinId, String currency = "");
     int Port = 443;
 
