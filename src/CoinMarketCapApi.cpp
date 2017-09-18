@@ -7,12 +7,14 @@ CoinMarketCapApi::CoinMarketCapApi(Client &client)	{
 CMCTickerResponse responseObject;
 String requestedCurrency;
 
+String currentKey;
+
 //**************************************************************************//
 // This code is the JSON Parser code written by squix78 as part of his example,
 // modified for this application //
 // https://github.com/squix78/json-streaming-parser //
 
-class DirectionsListener : public JsonListener {
+class CoinMarketCapListener : public JsonListener {
  public:
   virtual void whitespace(char c);
 
@@ -33,17 +35,17 @@ class DirectionsListener : public JsonListener {
   virtual void startObject();
 };
 
-void DirectionsListener::whitespace(char c) {
+void CoinMarketCapListener::whitespace(char c) {
   // Serial.println("whitespace");
 }
 
-void DirectionsListener::startDocument() {
+void CoinMarketCapListener::startDocument() {
   // Serial.println("start document");
 }
 
-void DirectionsListener::key(String key) { currentKey = key; }
+void CoinMarketCapListener::key(String key) { currentKey = key; }
 
-void DirectionsListener::value(String value) {
+void CoinMarketCapListener::value(String value) {
   if (currentKey == F("id")) {
     responseObject.id = value;
   } else if (currentKey == F("name")) {
@@ -53,50 +55,50 @@ void DirectionsListener::value(String value) {
   } else if (currentKey == F("rank")) {
     responseObject.rank = value.toInt();
   } else if (currentKey == F("price_usd")) {
-    responseObject.price_usd = value.toDouble();
+    responseObject.price_usd = atof(value.c_str());
   } else if (currentKey == F("price_btc")) {
-    responseObject.price_btc = value.toDouble();
+    responseObject.price_btc = atof(value.c_str());
   } else if (currentKey == F("24h_volume_usd")) {
-    responseObject.volume_usd_24h = value.toDouble();
+    responseObject.volume_usd_24h = atof(value.c_str());
   } else if (currentKey == F("market_cap_usd")) {
-    responseObject.market_cap_usd = value.toDouble();
+    responseObject.market_cap_usd = atof(value.c_str());
   } else if (currentKey == F("available_supply")) {
-    responseObject.available_supply = value.toDouble();
+    responseObject.available_supply = atof(value.c_str());
   } else if (currentKey == F("total_supply")) {
-    responseObject.total_supply = value.toDouble();
+    responseObject.total_supply = atof(value.c_str());
   } else if (currentKey == F("percent_change_1h")) {
-    responseObject.percent_change_1h = value.toDouble();
+    responseObject.percent_change_1h = atof(value.c_str());
   } else if (currentKey == F("percent_change_24h")) {
-    responseObject.percent_change_24h = value.toDouble();
+    responseObject.percent_change_24h = atof(value.c_str());
   } else if (currentKey == F("percent_change_7d")) {
-    responseObject.percent_change_7d = value.toDouble();
+    responseObject.percent_change_7d = atof(value.c_str());
   } else if (currentKey == F("last_updated")) {
-    responseObject.last_updated = value.toDouble();
+    responseObject.last_updated = atof(value.c_str());
   } else if (requestedCurrency != "") {
     if (currentKey == "price_" + requestedCurrency) {
-      responseObject.price_currency = value.toDouble();
+      responseObject.price_currency = atof(value.c_str());
     } else if (currentKey == "24h_volume_" + requestedCurrency) {
-      responseObject.volume_currency_24h = value.toDouble();
+      responseObject.volume_currency_24h = atof(value.c_str());
     } else if (currentKey == "market_cap_" + requestedCurrency) {
-      responseObject.market_cap_currency = value.toDouble();
+      responseObject.market_cap_currency = atof(value.c_str());
     }
   }
 }
 
-void DirectionsListener::endArray() {
+void CoinMarketCapListener::endArray() {
 }
 
-void DirectionsListener::endObject() {
+void CoinMarketCapListener::endObject() {
 }
 
-void DirectionsListener::endDocument() {
+void CoinMarketCapListener::endDocument() {
   // Serial.println("end document. ");
 }
 
-void DirectionsListener::startArray() {
+void CoinMarketCapListener::startArray() {
 }
 
-void DirectionsListener::startObject() {
+void CoinMarketCapListener::startObject() {
 }
 
 bool CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
@@ -143,6 +145,10 @@ CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency
 
   if(SendGetToCoinMarketCap(command)) {
 
+    CoinMarketCapListener listener;
+    JsonStreamingParser parser;
+    parser.setListener(&listener);
+
     while (client->available()) {
       char c = client->read();
       // parsing code:
@@ -152,7 +158,7 @@ CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency
 
     }
   } else {
-    lastResponse.error = "Error with request";
+    responseObject.error = "Error with request";
   }
 
   return responseObject;
