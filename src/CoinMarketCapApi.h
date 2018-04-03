@@ -61,6 +61,7 @@ class CoinMarketCapApi
 
   private:
     Client *client;
+    void closeClient();
 };
 
 #endif

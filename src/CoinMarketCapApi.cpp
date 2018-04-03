@@ -53,7 +53,7 @@ String CoinMarketCapApi::SendGetToCoinMarketCap(String command) {
 			}
 		}
 	}
-
+  closeClient();
   return body;
 }
 
@@ -99,6 +99,11 @@ CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency
       responseObject.error = "Failed to parse JSON";
     }
 
-    return responseObject;
+  return responseObject;
+}
+
+void CoinMarketCapApi::closeClient() {
+  if(client->connected()){
+    client->stop();
   }
 }
