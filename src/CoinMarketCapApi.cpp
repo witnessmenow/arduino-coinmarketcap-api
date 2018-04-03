@@ -98,6 +98,7 @@ CMCTickerResponse CoinMarketCapApi::GetTickerInfo(String coinId, String currency
     } else {
       responseObject.error = "Failed to parse JSON";
     }
+  }
 
   return responseObject;
 }
